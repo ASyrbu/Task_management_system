@@ -39,12 +39,17 @@ async def register_user(mongo_db, user_data) -> None:
     })
 
 
-async def add_text(sanic_app, text) -> None:
+async def add_text(mongo_db, text):
     try:
         print(f"Adding text: {text}")
-        users_collection = sanic_app.ctx.mongo[DATABASE_NAME]["users"]
-        await users_collection.insert_one({"text": text})
+        texts_collection = mongo_db["texts"]
+        await texts_collection.insert_one({"text": text})
         print("Text added successfully")
     except Exception as e:
         print(f"Error adding text: {str(e)}")
         raise
+
+async def search_text_by_id(mongo_db, text_id):
+    text_collection = mongo_db["texts"]
+    text = await text_collection.find_one({"task_id": text_id})
+    return text.get("text") if text else None

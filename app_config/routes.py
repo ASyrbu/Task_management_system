@@ -1,6 +1,8 @@
 from Task_management_system.app_config.task_manager import task_manager
 from sanic import response
 from Task_management_system.authentification import functionality
+from Task_management_system.mongodb import mongo_utils
+from Task_management_system.mongodb.mongo_utils import search_text_by_id
 from Task_management_system.functions.tasks import add_text_task
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
@@ -169,3 +171,26 @@ async def patch_user_route(request):
         redis_db=sanic_ref.redis)
 
     return json_response(200, token=new_token, description=f"Success.")
+
+async def route_search_text_by_id(request):
+    try:
+        task_id = request.json.get("task_id")
+
+        if not task_id:
+            return response.json({"error": "Task ID is not provided"}, status=400)
+
+        mongo_db = request.app.ctx.mongo
+
+        # Поиск текста по ID
+        text = await mongo_utils.search_text_by_id(mongo_db, task_id)
+
+        if not text:
+            return response.json({"error": "Text not found"}, status=404)
+
+        return response.json({"text": text})
+
+    except Exception as e:
+        print("Error in route_search_text_by_id:", str(e))
+        return response.json({"error": str(e)}, status=500)
+
+
