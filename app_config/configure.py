@@ -1,10 +1,10 @@
 from sanic import Sanic
 from json import load
-from app_config.routes import route_add_text, route_get_task_status
-from mongodb.startup import initialize_database
-from functions.filesystem_utils import environment_get
-from app_config.tasks_queue import process_tasks
-from app_config import routes as routing
+from Task_management_system.app_config.routes import route_add_text, route_get_task_status
+from Task_management_system.mongodb.startup import initialize_database
+from Task_management_system.functions.filesystem_utils import environment_get
+from Task_management_system.app_config.tasks_queue import process_tasks
+from Task_management_system.app_config import routes as routing
 
 
 def read_config() -> dict:
@@ -23,7 +23,7 @@ def get_application():
 
     sanic_app.register_listener(initialize_database, "before_server_start")
     sanic_app.add_route(route_add_text, "/api/addtext", methods=["POST"], ctx_refsanic=sanic_app)
-    sanic_app.add_route(route_get_task_status, "/api/task/status", methods=["GET"], ctx_refsanic=sanic_app)
+    sanic_app.add_route(route_get_task_status, "/api/taskstatus", methods=["GET"], ctx_refsanic=sanic_app)
     sanic_app.add_route(routing.login_route, "/api/login", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.add_route(routing.register_route, "/api/registration", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.add_route(routing.check_registration_code_route, "/api/registration/check_code", methods=["POST"], ctx_refsanic=sanic_app)

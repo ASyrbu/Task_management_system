@@ -1,4 +1,4 @@
-from utils.token_utils import generate_auth_user_token
+from Task_management_system.utils.token_utils import generate_auth_user_token
 
 
 def validate_schema_login_route(schema) -> bool:

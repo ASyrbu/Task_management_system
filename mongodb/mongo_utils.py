@@ -1,4 +1,4 @@
-from mongodb.startup import DATABASE_NAME
+from Task_management_system.mongodb.startup import DATABASE_NAME
 
 
 async def exists_user(mongo_db, search) -> bool:

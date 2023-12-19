@@ -1,7 +1,7 @@
 from functools import singledispatch
-from mongodb import mongo_utils as mongo_query
-from redisdb import redis_utils as redis_query
-from utils import route_signature as signatures
+from Task_management_system.mongodb import mongo_utils as mongo_query
+from Task_management_system.redisdb import redis_utils as redis_query
+from Task_management_system.utils import route_signature as signatures
 from rapidjson import loads
 
 

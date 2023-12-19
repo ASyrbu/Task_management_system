@@ -19,4 +19,4 @@ login_credential = {
 
 
 def api_url(path):
-    return f"http://0.0.0.0:4000{path}"
+    return f"http://127.0.0.1:4000{path}"
