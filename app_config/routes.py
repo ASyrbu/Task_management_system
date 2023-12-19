@@ -1,8 +1,7 @@
-from Task_management_system.mongodb.mongo_utils import add_text
 from Task_management_system.app_config.task_manager import task_manager
 from sanic import response
-from uuid import uuid4
 from Task_management_system.authentification import functionality
+from Task_management_system.functions.tasks import add_text_task
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
 import Task_management_system.utils.route_signature as routes_sign
@@ -10,6 +9,7 @@ from Task_management_system.utils.permissions_utils import check_user_permission
 from Task_management_system.utils.raise_utils import json_response
 from Task_management_system.utils.auth_hash import generate_user_id
 from Task_management_system.utils.token_utils import generate_auth_user_pack, generate_registration_code
+
 
 async def route_get_task_status(request):
     try:
@@ -25,9 +25,8 @@ async def route_get_task_status(request):
             "status": task_status,
             "failure_reason": failure_reason
         })
-
-    except Exception as err:
-        return response.json({"error": str(err)}, status=500)
+    except Exception as e:
+        return response.json({"error": str(e)}, status=500)
 
 
 async def route_add_text(request):
@@ -38,9 +37,7 @@ async def route_add_text(request):
             return response.json({"error": "Empty text provided"}, status=400)
 
         text_add = body.decode('utf-8')
-        task_id = str(uuid4())  # Генерируем уникальный идентификатор для задачи
-
-        await add_text(request.app, text_add)
+        task_id = await task_manager.add_task(add_text_task, text_add, request.app.config)
 
         return response.json({
             "task_id": task_id,
@@ -50,7 +47,6 @@ async def route_add_text(request):
 
     except Exception as err:
         return response.json({"error": str(err)}, status=500)
-
 
 
 async def add_response_headers(_, responses):
