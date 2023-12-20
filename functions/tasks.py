@@ -14,7 +14,6 @@ async def add_text_task(task_id, text, config):
     try:
         print(f"Processing task {task_id}: Adding text to the database: {text}")
 
-        # Генерируем уникальный идентификатор текста
         text_id = str(uuid.uuid4())
 
         users_collection = config.mongo[DATABASE_NAME]["users"]

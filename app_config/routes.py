@@ -21,10 +21,8 @@ async def route_add_text(request):
 
         text_add = body.decode('utf-8')
 
-        # Генерируем уникальный идентификатор задачи (текста)
         task_id = str(uuid.uuid4())
 
-        # Добавляем текст с уникальным идентификатором в базу данных
         await add_text_with_id(request.app.ctx.mongo[DATABASE_NAME], task_id, text_add)
 
         return response.json({
@@ -35,6 +33,24 @@ async def route_add_text(request):
 
     except Exception as err:
         return response.json({"error": str(err)}, status=500)
+
+async def find_text_by_id(request, task_id):
+    try:
+        result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
+
+        if result:
+            return response.json({
+                "text_id": result.get("task_id"),
+                "text": result.get("text"),
+            })
+        else:
+            return response.json({"error": "Text not found"}, status=404)
+
+    except Exception as err:
+        return response.json({"error": str(err)}, status=500)
+
+async def route_get_text(request, task_id):
+    return await find_text_by_id(request, task_id)
 
 
 async def add_response_headers(_, responses):
