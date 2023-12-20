@@ -10,6 +10,7 @@ from Task_management_system.utils.permissions_utils import check_user_permission
 from Task_management_system.utils.raise_utils import json_response
 from Task_management_system.utils.auth_hash import generate_user_id
 from Task_management_system.utils.token_utils import generate_auth_user_pack, generate_registration_code
+from Task_management_system.app_config.tasks_queue import task_manager
 
 
 async def route_add_text(request):
@@ -173,3 +174,7 @@ async def patch_user_route(request):
         redis_db=sanic_ref.redis)
 
     return json_response(200, token=new_token, description=f"Success.")
+
+async def route_get_task_status(request, task_id):
+    status, failure_reason = await task_manager.get_task_status(task_id)
+    return response.json({"task_id": task_id, "status": status, "failure_reason": failure_reason})
