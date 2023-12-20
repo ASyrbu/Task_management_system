@@ -38,18 +38,17 @@ async def register_user(mongo_db, user_data) -> None:
         "logs_access": user_data.get("permissions")
     })
 
-
-async def add_text(mongo_db, text):
+async def add_text_with_id(mongo_db, text_id, text) -> None:
     try:
-        print(f"Adding text: {text}")
-        texts_collection = mongo_db["texts"]
-        await texts_collection.insert_one({"text": text})
-        print("Text added successfully")
+        print(f"Adding text with id {text_id}: {text}")
+        users_collection = mongo_db["users"]
+        await users_collection.insert_one({"task_id": text_id, "text": text})
+        print(f"Text with id {text_id} added successfully")
     except Exception as e:
-        print(f"Error adding text: {str(e)}")
+        print(f"Error adding text with id {text_id}: {str(e)}")
         raise
 
 async def search_text_by_id(mongo_db, text_id):
-    text_collection = mongo_db["texts"]
+    text_collection = mongo_db["users"]
     text = await text_collection.find_one({"task_id": text_id})
     return text.get("text") if text else None

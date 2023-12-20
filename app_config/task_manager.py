@@ -1,4 +1,3 @@
-# В файле task_manager.py
 import asyncio
 import uuid
 

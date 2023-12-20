@@ -1,7 +1,11 @@
 from Task_management_system.app_config.task_manager import task_manager
 from sanic import response
+import asyncio
+from Task_management_system.mongodb.startup import DATABASE_NAME
+import uuid
 from Task_management_system.authentification import functionality
 from Task_management_system.mongodb import mongo_utils
+from Task_management_system.mongodb.mongo_utils import add_text_with_id
 from Task_management_system.mongodb.mongo_utils import search_text_by_id
 from Task_management_system.functions.tasks import add_text_task
 import Task_management_system.mongodb.mongo_utils as mongo_db
@@ -19,6 +23,9 @@ async def route_get_task_status(request):
 
         if not task_id:
             return response.json({"error": "Task ID is not provided"}, status=400)
+
+        # Wait for the task to be processed
+        await asyncio.sleep(1)  # Adjust the sleep duration as needed
 
         task_status, failure_reason = task_manager.get_task_status(task_id)
 
@@ -39,7 +46,12 @@ async def route_add_text(request):
             return response.json({"error": "Empty text provided"}, status=400)
 
         text_add = body.decode('utf-8')
-        task_id = await task_manager.add_task(add_text_task, text_add, request.app.config)
+
+        # Генерируем уникальный идентификатор задачи (текста)
+        task_id = str(uuid.uuid4())
+
+        # Добавляем текст с уникальным идентификатором в базу данных
+        await add_text_with_id(request.app.ctx.mongo[DATABASE_NAME], task_id, text_add)
 
         return response.json({
             "task_id": task_id,
@@ -179,18 +191,14 @@ async def route_search_text_by_id(request):
         if not task_id:
             return response.json({"error": "Task ID is not provided"}, status=400)
 
-        mongo_db = request.app.ctx.mongo
-
         # Поиск текста по ID
-        text = await mongo_utils.search_text_by_id(mongo_db, task_id)
+        text = await mongo_utils.search_text_by_id(request.app.ctx.mongo, task_id)
 
-        if not text:
+        if text is None:
             return response.json({"error": "Text not found"}, status=404)
 
-        return response.json({"text": text})
+        return response.json({"task_id": task_id, "text": text})
 
     except Exception as e:
         print("Error in route_search_text_by_id:", str(e))
         return response.json({"error": str(e)}, status=500)
-
-
