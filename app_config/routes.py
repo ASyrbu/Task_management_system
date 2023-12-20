@@ -1,13 +1,8 @@
-from Task_management_system.app_config.task_manager import task_manager
 from sanic import response
-import asyncio
 from Task_management_system.mongodb.startup import DATABASE_NAME
 import uuid
 from Task_management_system.authentification import functionality
-from Task_management_system.mongodb import mongo_utils
 from Task_management_system.mongodb.mongo_utils import add_text_with_id
-from Task_management_system.mongodb.mongo_utils import search_text_by_id
-from Task_management_system.functions.tasks import add_text_task
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
 import Task_management_system.utils.route_signature as routes_sign
@@ -15,27 +10,6 @@ from Task_management_system.utils.permissions_utils import check_user_permission
 from Task_management_system.utils.raise_utils import json_response
 from Task_management_system.utils.auth_hash import generate_user_id
 from Task_management_system.utils.token_utils import generate_auth_user_pack, generate_registration_code
-
-
-async def route_get_task_status(request):
-    try:
-        task_id = request.args.get("task_id")
-
-        if not task_id:
-            return response.json({"error": "Task ID is not provided"}, status=400)
-
-        # Wait for the task to be processed
-        await asyncio.sleep(1)  # Adjust the sleep duration as needed
-
-        task_status, failure_reason = task_manager.get_task_status(task_id)
-
-        return response.json({
-            "task_id": task_id,
-            "status": task_status,
-            "failure_reason": failure_reason
-        })
-    except Exception as e:
-        return response.json({"error": str(e)}, status=500)
 
 
 async def route_add_text(request):
@@ -183,22 +157,3 @@ async def patch_user_route(request):
         redis_db=sanic_ref.redis)
 
     return json_response(200, token=new_token, description=f"Success.")
-
-async def route_search_text_by_id(request):
-    try:
-        task_id = request.json.get("task_id")
-
-        if not task_id:
-            return response.json({"error": "Task ID is not provided"}, status=400)
-
-        # Поиск текста по ID
-        text = await mongo_utils.search_text_by_id(request.app.ctx.mongo, task_id)
-
-        if text is None:
-            return response.json({"error": "Text not found"}, status=404)
-
-        return response.json({"task_id": task_id, "text": text})
-
-    except Exception as e:
-        print("Error in route_search_text_by_id:", str(e))
-        return response.json({"error": str(e)}, status=500)

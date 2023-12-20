@@ -24,11 +24,5 @@ class TaskManager:
         await self.task_queue.put((task, task_id))
         return task_id
 
-    def get_task_status(self, task_id):
-        status_info = self.task_statuses.get(task_id, {"status": "UNKNOWN", "failure_reason": None})
-        return status_info["status"], status_info["failure_reason"]
-
-    def get_all_task_ids(self):
-        return list(self.task_statuses.keys())
 
 task_manager = TaskManager()

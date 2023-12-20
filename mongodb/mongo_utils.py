@@ -48,7 +48,3 @@ async def add_text_with_id(mongo_db, text_id, text) -> None:
         print(f"Error adding text with id {text_id}: {str(e)}")
         raise
 
-async def search_text_by_id(mongo_db, text_id):
-    text_collection = mongo_db["users"]
-    text = await text_collection.find_one({"task_id": text_id})
-    return text.get("text") if text else None
