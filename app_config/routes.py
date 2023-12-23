@@ -35,6 +35,13 @@ async def route_add_text(request):
     except Exception as err:
         return response.json({"error": str(err)}, status=500)
 
+async def route_get_task_status(request, task_id):
+    status_info = task_manager.task_statuses.get(task_id, {})
+    return response.json({
+        "task_id": task_id,
+        "status": status_info.get("status"),
+        "failure_reason": status_info.get("failure_reason"),
+    })
 async def find_text_by_id(request, task_id):
     try:
         result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
@@ -175,6 +182,3 @@ async def patch_user_route(request):
 
     return json_response(200, token=new_token, description=f"Success.")
 
-async def route_get_task_status(request, task_id):
-    status, failure_reason = await task_manager.get_task_status(task_id)
-    return response.json({"task_id": task_id, "status": status, "failure_reason": failure_reason})

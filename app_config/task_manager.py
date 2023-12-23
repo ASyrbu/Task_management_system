@@ -8,12 +8,13 @@ class TaskManager:
 
     async def process_tasks(self):
         while True:
-            task, task_id = await self.task_queue.get()
+            task, task_id, args, kwargs = await self.task_queue.get()
             try:
-                self.task_statuses[task_id] = {"status": "PARSING", "failure_reason": None}
-                await task()
+                # Устанавливаем статус "DONE" при успешном выполнении задачи
                 self.task_statuses[task_id] = {"status": "DONE", "failure_reason": None}
+                await task(*args, **kwargs)
             except Exception as e:
+                # Устанавливаем статус "FAILED" и причину ошибки при возникновении исключения
                 self.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(e)}
                 print(f"Error processing task {task_id}: {e}")
             finally:
@@ -21,17 +22,9 @@ class TaskManager:
 
     async def add_task(self, task, *args, **kwargs):
         task_id = str(uuid.uuid4())
+        # Устанавливаем статус "PENDING" при добавлении задачи в очередь
         self.task_statuses[task_id] = {"status": "PENDING", "failure_reason": None}
-        await self.task_queue.put((task, task_id))
+        await self.task_queue.put((task, task_id, args, kwargs))
         return task_id
-
-    async def get_task_status(self, task_id):
-        # Подождем некоторое время, чтобы задача точно успела обработаться
-        await asyncio.sleep(1)
-        status_info = self.task_statuses.get(task_id, {"status": "UNKNOWN", "failure_reason": None})
-        return status_info["status"], status_info["failure_reason"]
-
-    def get_all_task_ids(self):
-        return list(self.task_statuses.keys())
 
 task_manager = TaskManager()
