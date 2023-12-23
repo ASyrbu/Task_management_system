@@ -36,12 +36,28 @@ async def route_add_text(request):
         return response.json({"error": str(err)}, status=500)
 
 async def route_get_task_status(request, task_id):
-    status_info = task_manager.task_statuses.get(task_id, {})
-    return response.json({
-        "task_id": task_id,
-        "status": status_info.get("status"),
-        "failure_reason": status_info.get("failure_reason"),
-    })
+    try:
+        status_info = task_manager.task_statuses.get(task_id, {})
+
+        if status_info:
+            return response.json({
+                "task_id": task_id,
+                "status": status_info.get("status"),
+                "failure_reason": status_info.get("failure_reason"),
+            })
+        else:
+            # Если задача не найдена, устанавливаем статус "FAILED" и причину ошибки
+            task_manager.task_statuses[task_id] = {"status": "FAILED", "failure_reason": "This id does not exist in the database"}
+            return response.json({
+                "error": "Text not found",
+                "status": "FAILED",
+                "failure_reason": "This id does not exist in the database"
+            }, status=404)
+
+    except Exception as err:
+        # В случае других ошибок также устанавливаем статус "FAILED" и причину ошибки
+        task_manager.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(err)}
+        return response.json({"error": str(err)}, status=500)
 async def find_text_by_id(request, task_id):
     try:
         result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
