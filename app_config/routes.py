@@ -46,7 +46,6 @@ async def route_get_task_status(request, task_id):
                 "failure_reason": status_info.get("failure_reason"),
             })
         else:
-            # Если задача не найдена, устанавливаем статус "FAILED" и причину ошибки
             task_manager.task_statuses[task_id] = {"status": "FAILED", "failure_reason": "This id does not exist in the database"}
             return response.json({
                 "error": "Text not found",
@@ -55,7 +54,6 @@ async def route_get_task_status(request, task_id):
             }, status=404)
 
     except Exception as err:
-        # В случае других ошибок также устанавливаем статус "FAILED" и причину ошибки
         task_manager.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(err)}
         return response.json({"error": str(err)}, status=500)
 async def find_text_by_id(request, task_id):

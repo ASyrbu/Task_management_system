@@ -10,11 +10,9 @@ class TaskManager:
         while True:
             task, task_id, args, kwargs = await self.task_queue.get()
             try:
-                # Устанавливаем статус "DONE" при успешном выполнении задачи
                 self.task_statuses[task_id] = {"status": "DONE", "failure_reason": None}
                 await task(*args, **kwargs)
             except Exception as e:
-                # Устанавливаем статус "FAILED" и причину ошибки при возникновении исключения
                 self.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(e)}
                 print(f"Error processing task {task_id}: {e}")
             finally:
@@ -22,7 +20,6 @@ class TaskManager:
 
     async def add_task(self, task, *args, **kwargs):
         task_id = str(uuid.uuid4())
-        # Устанавливаем статус "PENDING" при добавлении задачи в очередь
         self.task_statuses[task_id] = {"status": "PENDING", "failure_reason": None}
         await self.task_queue.put((task, task_id, args, kwargs))
         return task_id

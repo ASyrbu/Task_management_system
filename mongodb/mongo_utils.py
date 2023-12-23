@@ -46,11 +46,9 @@ async def add_text_with_id(mongo_db, text_id, text) -> None:
         print(f"Text with id {text_id} added successfully")
     except Exception as e:
         print(f"Error adding text with id {text_id}: {str(e)}")
-        # В случае ошибки добавляем статус "FAILED" и причину ошибки
         task_manager.task_statuses[text_id] = {"status": "FAILED", "failure_reason": str(e)}
         raise
     else:
-        # Если нет ошибок, добавляем успешный статус
         task_manager.task_statuses[text_id] = {"status": "DONE", "failure_reason": None}
 
 
