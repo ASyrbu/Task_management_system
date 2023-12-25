@@ -46,8 +46,12 @@ async def route_add_text(request):
 
 async def route_get_task_status(request, task_id):
     try:
-        status_info = task_manager.task_statuses.get(task_id, {})
+        user_data = await get_user_data(request)
 
+        if user_data is None:
+            return response.json({"error": "User not authenticated"}, status=401)
+
+        status_info = task_manager.task_statuses.get(task_id, {})
         if status_info:
             return response.json({
                 "task_id": task_id,
@@ -62,10 +66,12 @@ async def route_get_task_status(request, task_id):
                 "failure_reason": "This id does not exist in the database"
             }, status=404)
 
-    except Exception as err:
-        task_manager.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(err)}
-        return response.json({"error": str(err)}, status=500)
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
 
+    except Exception as e:
+        print(f"Error processing request: {str(e)}")
+        return response.json({"error": str(e)}, status=500)
 
 async def add_file_route(request):
     try:
@@ -101,6 +107,10 @@ async def add_file_route(request):
 
 async def find_text_by_id(request, task_id):
     try:
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            return response.json({"error": "User not authenticated"}, status=401)
         result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
 
         if result:
