@@ -1,7 +1,7 @@
 from sanic import Sanic
 from json import load
 from Task_management_system.app_config.routes import (
-    route_add_text, route_get_text, route_get_task_status, add_file_route
+    route_add_text, route_get_text, route_get_task_status, add_file_route,route_delete_text
 )
 
 from Task_management_system.mongodb.startup import initialize_database
@@ -26,6 +26,7 @@ def get_application():
     sanic_app.add_route(route_add_text, "/api/addtext", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.add_route(add_file_route, "/api/addfile", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.add_route(route_get_task_status, "/api/taskstatus/<task_id>", methods=["GET"], ctx_refsanic=sanic_app)
+    sanic_app.add_route(route_delete_text, "/api/delete_text/<text_id>", methods=["DELETE"], ctx_refsanic=sanic_app)
     sanic_app.add_route(route_get_text, "/api/gettext/<task_id>", methods=["GET"], ctx_refsanic=sanic_app)
     sanic_app.add_route(routing.login_route, "/api/login", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.add_route(routing.register_route, "/api/registration", methods=["POST"], ctx_refsanic=sanic_app)

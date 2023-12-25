@@ -66,3 +66,17 @@ async def add_file_with_id(mongo_db, file_id, file_content):
         raise
     else:
         task_manager.task_statuses[file_id] = {"status": "DONE", "failure_reason": None}
+
+async def delete_text_by_id(mongo_db, text_id):
+    try:
+        print(f"Deleting text with id {text_id}")
+        result = await mongo_db["users"].delete_one({"task_id": text_id})
+
+        if result.deleted_count == 1:
+            print(f"Text with id {text_id} deleted successfully")
+        else:
+            print(f"Text with id {text_id} not found in the database")
+
+    except Exception as e:
+        print(f"Error deleting text with id {text_id}: {str(e)}")
+        raise

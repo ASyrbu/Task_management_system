@@ -3,7 +3,7 @@ from sanic import Unauthorized
 from Task_management_system.mongodb.startup import DATABASE_NAME
 import uuid
 from Task_management_system.authentification import functionality
-from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id
+from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id,delete_text_by_id
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
 import Task_management_system.utils.route_signature as routes_sign
@@ -126,6 +126,23 @@ async def find_text_by_id(request, task_id):
     except Exception as e:
         return response.json({"error": str(e)}, status=500)
 
+async def route_delete_text(request, text_id):
+    try:
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            return response.json({"error": "User not authenticated"}, status=401)
+
+        await delete_text_by_id(request.app.ctx.mongo[DATABASE_NAME], text_id)
+
+        return response.json({
+            "message": f"Text with id {text_id} deleted successfully",
+        })
+
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
+    except Exception as err:
+        return response.json({"error": str(err)}, status=500)
 
 async def route_get_text(request, task_id):
     return await find_text_by_id(request, task_id)
