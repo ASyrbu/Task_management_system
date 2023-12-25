@@ -1,5 +1,6 @@
-from Task_management_system.mongodb.startup import DATABASE_NAME
 from Task_management_system.app_config.task_manager import task_manager
+from gridfs import GridFS
+
 
 async def exists_user(mongo_db, search) -> bool:
     result = await mongo_db["users"].find_one(search, {"id": 1})
@@ -38,6 +39,7 @@ async def register_user(mongo_db, user_data) -> None:
         "logs_access": user_data.get("permissions")
     })
 
+
 async def add_text_with_id(mongo_db, text_id, text) -> None:
     try:
         print(f"Adding text with id {text_id}: {text}")
@@ -52,3 +54,15 @@ async def add_text_with_id(mongo_db, text_id, text) -> None:
         task_manager.task_statuses[text_id] = {"status": "DONE", "failure_reason": None}
 
 
+async def add_file_with_id(mongo_db, file_id, file_content):
+    try:
+        print(f"Adding file with id {file_id}")
+        fs = GridFS(mongo_db, collection="users")
+        file_id = fs.put(file_content, filename=file_id)
+        print(f"File with id {file_id} added successfully")
+    except Exception as e:
+        print(f"Error adding file with id {file_id}: {str(e)}")
+        task_manager.task_statuses[file_id] = {"status": "FAILED", "failure_reason": str(e)}
+        raise
+    else:
+        task_manager.task_statuses[file_id] = {"status": "DONE", "failure_reason": None}

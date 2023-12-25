@@ -6,15 +6,15 @@ urls = {
 }
 
 registration_credentials = {
-    "login": "getname",
-    "password": "getpass",
-    "email": "getname@gmail.com",
+    "login": "gm",
+    "password": "gem",
+    "email": "gm@gmail.com",
     "registration_code": "code_1234"
 }
 
 login_credential = {
-    "login": "getname",
-    "password": "getpass"
+    "login": "gm",
+    "password": "gem"
 }
 
 

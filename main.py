@@ -1,6 +1,5 @@
 from app_config.configure import get_application
-from functions.filesystem_utils import environment_set as es
-es("SERVICE_NAME", "TASK_MANAGER_API")
+
 sanic_task = get_application()
 
 

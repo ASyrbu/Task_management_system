@@ -1,8 +1,9 @@
 from sanic import response
+from sanic import Unauthorized
 from Task_management_system.mongodb.startup import DATABASE_NAME
 import uuid
 from Task_management_system.authentification import functionality
-from Task_management_system.mongodb.mongo_utils import add_text_with_id
+from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
 import Task_management_system.utils.route_signature as routes_sign
@@ -15,6 +16,11 @@ from Task_management_system.app_config.tasks_queue import task_manager
 
 async def route_add_text(request):
     try:
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            return response.json({"error": "User not authenticated"}, status=401)
+
         body = request.body
 
         if not body:
@@ -32,8 +38,11 @@ async def route_add_text(request):
             "added_text": text_add,
         })
 
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
     except Exception as err:
         return response.json({"error": str(err)}, status=500)
+
 
 async def route_get_task_status(request, task_id):
     try:
@@ -56,6 +65,40 @@ async def route_get_task_status(request, task_id):
     except Exception as err:
         task_manager.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(err)}
         return response.json({"error": str(err)}, status=500)
+
+
+async def add_file_route(request):
+    try:
+
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            raise Unauthorized("User not authenticated")
+
+        file_field = request.files.get('file')
+
+        if file_field is None:
+            print("No file provided")
+            return response.json({"error": "No file provided"}, status=400)
+
+        file_content = file_field.body
+        file_id = str(uuid.uuid4())
+
+        await add_file_with_id(mongo_db=mongo_db, file_id=file_id, file_content=file_content)
+
+        return response.json({
+            "file_id": file_id,
+            "message": "File added successfully",
+        })
+
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
+
+    except Exception as e:
+        print(f"Error processing request: {str(e)}")
+        return response.json({"error": str(e)}, status=500)
+
+
 async def find_text_by_id(request, task_id):
     try:
         result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
@@ -68,8 +111,11 @@ async def find_text_by_id(request, task_id):
         else:
             return response.json({"error": "Text not found"}, status=404)
 
-    except Exception as err:
-        return response.json({"error": str(err)}, status=500)
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
+    except Exception as e:
+        return response.json({"error": str(e)}, status=500)
+
 
 async def route_get_text(request, task_id):
     return await find_text_by_id(request, task_id)
@@ -77,6 +123,16 @@ async def route_get_text(request, task_id):
 
 async def add_response_headers(_, responses):
     responses.headers["Accept"] = "application/json"
+
+
+async def get_user_data(request):
+    user_id = request.headers.get('user_id')
+    session_id = request.headers.get('session_id')
+    token = request.headers.get('token')
+    if user_id is None or session_id is None or token is None:
+        raise Unauthorized("User Not Authorized")
+    user_data = await redis_db.check_user_token(request.app.ctx.redis, user_id, session_id, token)
+    return user_data
 
 
 async def login_route(request):
@@ -195,4 +251,3 @@ async def patch_user_route(request):
         redis_db=sanic_ref.redis)
 
     return json_response(200, token=new_token, description=f"Success.")
-
