@@ -1,7 +1,7 @@
 from sanic import Sanic
 from json import load
 from Task_management_system.app_config.routes import (
-    route_add_text, route_get_text, route_get_task_status, add_file_route, route_delete_text
+    route_add_text, route_get_text,  add_file_route, route_delete_text, route_get_task_status
 )
 
 from Task_management_system.mongodb.startup import initialize_database

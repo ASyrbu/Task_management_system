@@ -1,6 +1,4 @@
 import asyncio
-import uuid
-from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id, delete_text_by_id
 
 class TaskManager:
     def __init__(self):
@@ -19,5 +17,9 @@ class TaskManager:
                 print(f"Error processing task {task_id}: {e}")
             finally:
                 self.task_queue.task_done()
+
+    async def add_task_to_queue(self, task, task_id, args, kwargs):
+        await self.task_queue.put((task, task_id, args, kwargs))
+
 
 task_manager = TaskManager()

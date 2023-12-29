@@ -53,7 +53,6 @@ async def add_text_with_id(mongo_db, text_id, text) -> None:
     else:
         task_manager.task_statuses[text_id] = {"status": "DONE", "failure_reason": None}
 
-
 async def add_file_with_id(mongo_db, file_id, file_content):
     try:
         print(f"Adding file with id {file_id}")
