@@ -3,7 +3,7 @@ from sanic import Unauthorized
 from Task_management_system.mongodb.startup import DATABASE_NAME
 import uuid
 from Task_management_system.authentification import functionality
-from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id,delete_text_by_id
+from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id, delete_text_by_id
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
 import Task_management_system.utils.route_signature as routes_sign
@@ -14,7 +14,7 @@ from Task_management_system.utils.token_utils import generate_auth_user_pack, ge
 from Task_management_system.app_config.tasks_queue import task_manager
 
 
-async def route_add_text(request):
+async def add_text(request):
     try:
         user_data = await get_user_data(request)
 
@@ -44,7 +44,7 @@ async def route_add_text(request):
         return response.json({"error": str(err)}, status=500)
 
 
-async def route_get_task_status(request, task_id):
+async def get_task_status(request, task_id):
     try:
         user_data = await get_user_data(request)
 
@@ -73,7 +73,8 @@ async def route_get_task_status(request, task_id):
         print(f"Error processing request: {str(e)}")
         return response.json({"error": str(e)}, status=500)
 
-async def add_file_route(request):
+
+async def add_file(request):
     try:
 
         user_data = await get_user_data(request)
@@ -126,7 +127,8 @@ async def find_text_by_id(request, task_id):
     except Exception as e:
         return response.json({"error": str(e)}, status=500)
 
-async def route_delete_text(request, text_id):
+
+async def delete_text(request, text_id):
     try:
         user_data = await get_user_data(request)
 
@@ -144,8 +146,25 @@ async def route_delete_text(request, text_id):
     except Exception as err:
         return response.json({"error": str(err)}, status=500)
 
+
+async def route_add_text(request):
+    return await add_text(request)
+
+
+async def route_delete_text(request, text_id):
+    return await delete_text(request, text_id)
+
+
+async def add_file_route(request):
+    return await add_file(request)
+
+
 async def route_get_text(request, task_id):
     return await find_text_by_id(request, task_id)
+
+
+async def route_get_task_status(request, task_id):
+    return await get_task_status(request, task_id)
 
 
 async def add_response_headers(_, responses):
