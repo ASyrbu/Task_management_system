@@ -1,14 +1,14 @@
-import asyncio
-from Task_management_system.app_config.task_manager import task_manager
-from Task_management_system.mongodb.mongo_utils import add_text_with_id, add_file_with_id
-async def process_tasks():
-    await task_manager.process_tasks()
+from asyncio import Queue
 
-loop = asyncio.get_event_loop()
-loop.create_task(process_tasks())
+class TaskQueue:
+    def __init__(self):
+        self.queue = Queue()
 
-async def enqueue_add_text_task(task_id, text_add, mongo_db):
-    await task_manager.add_task_to_queue(add_text_with_id, task_id, [mongo_db, task_id, text_add], {})
+    async def enqueue_add_text_task(self, task_id, text, mongo_db):
+        await self.queue.put({"type": "add_text", "task_id": task_id, "text": text, "mongo_db": mongo_db})
 
-async def enqueue_add_file_task(file_id, file_content, mongo_db):
-    await task_manager.add_task_to_queue(add_file_with_id, file_id, [mongo_db, file_id, file_content], {})
+    async def enqueue_add_file_task(self, file_id, file_content, mongo_db):
+        await self.queue.put({"type": "add_file", "file_id": file_id, "file_content": file_content, "mongo_db": mongo_db})
+
+
+task_queue = TaskQueue()

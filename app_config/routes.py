@@ -11,7 +11,7 @@ from Task_management_system.utils.permissions_utils import check_user_permission
 from Task_management_system.utils.raise_utils import json_response
 from Task_management_system.utils.auth_hash import generate_user_id
 from Task_management_system.utils.token_utils import generate_auth_user_pack, generate_registration_code
-from Task_management_system.app_config.tasks_queue import enqueue_add_file_task, enqueue_add_text_task
+from Task_management_system.app_config.tasks_queue import task_queue
 from Task_management_system.app_config.task_manager import task_manager
 
 
@@ -31,7 +31,7 @@ async def add_text(request):
 
         task_id = str(uuid.uuid4())
 
-        await enqueue_add_text_task(task_id, text_add, request.app.ctx.mongo[DATABASE_NAME])
+        await task_queue.enqueue_add_text_task(task_id, text_add, request.app.ctx.mongo[DATABASE_NAME])
 
         return response.json({
             "task_id": task_id,
@@ -61,7 +61,8 @@ async def add_file(request):
         file_content = file_field.body
         file_id = str(uuid.uuid4())
 
-        await enqueue_add_file_task(file_id, file_content, request.app.ctx.mongo[DATABASE_NAME])
+        # Use the task queue to add a file
+        await task_queue.enqueue_add_file_task(file_id, file_content, request.app.ctx.mongo[DATABASE_NAME])
 
         return response.json({
             "task_id": file_id,
@@ -73,7 +74,6 @@ async def add_file(request):
     except Exception as e:
         print(f"Error processing request: {str(e)}")
         return response.json({"error": str(e)}, status=500)
-
 
 async def get_task_status(request, task_id):
     try:

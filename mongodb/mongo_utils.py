@@ -1,4 +1,3 @@
-from Task_management_system.app_config.task_manager import task_manager
 from gridfs import GridFS
 
 
@@ -39,6 +38,7 @@ async def register_user(mongo_db, user_data) -> None:
         "logs_access": user_data.get("permissions")
     })
 
+from Task_management_system.app_config.task_manager import task_manager
 
 async def add_text_with_id(mongo_db, text_id, text) -> None:
     try:

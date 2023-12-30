@@ -5,7 +5,7 @@ from Task_management_system.app_config.routes import (
 )
 
 from Task_management_system.mongodb.startup import initialize_database
-from Task_management_system.app_config.tasks_queue import process_tasks
+from Task_management_system.app_config.task_manager import task_manager
 from Task_management_system.app_config import routes as routing
 
 
@@ -33,6 +33,6 @@ def get_application():
     sanic_app.add_route(routing.check_registration_code_route, "/api/registration/check_code", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.add_route(routing.create_registration_code_route, "/api/admin/create_code", methods=["POST"], ctx_refsanic=sanic_app)
     sanic_app.on_response(routing.add_response_headers)
-    sanic_app.add_task(process_tasks())
+    sanic_app.add_task(task_manager.process_tasks())
 
     return sanic_app
