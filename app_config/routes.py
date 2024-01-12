@@ -130,7 +130,7 @@ async def delete_text(request, text_id):
         if user_data is None:
             return response.json({"error": "User not authenticated"}, status=401)
 
-        await delete_text_by_id(request.app.ctx.mongo[DATABASE_NAME], text_id)
+        await delete_text_by_id(request.app.ctx.redis, text_id)
 
         return response.json({
             "message": f"Text with id {text_id} deleted successfully",
