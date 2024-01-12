@@ -107,12 +107,13 @@ async def find_text_by_id(request, task_id):
 
         if user_data is None:
             return response.json({"error": "User not authenticated"}, status=401)
-        result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
+
+        result = await request.app.ctx.redis.hget("text_collection", task_id)
 
         if result:
             return response.json({
-                "text_id": result.get("task_id"),
-                "text": result.get("text"),
+                "text_id": task_id,
+                "text": result,
             })
         else:
             return response.json({"error": "Text not found"}, status=404)
