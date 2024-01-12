@@ -3,7 +3,7 @@ from sanic import Unauthorized
 from Task_management_system.mongodb.startup import DATABASE_NAME
 import uuid
 from Task_management_system.authentification import functionality
-from Task_management_system.mongodb.mongo_utils import delete_text_by_id
+from Task_management_system.redisdb.redis_utils import delete_text_by_id,add_text_with_id,add_file_with_id
 import Task_management_system.mongodb.mongo_utils as mongo_db
 import Task_management_system.redisdb.redis_utils as redis_db
 import Task_management_system.utils.route_signature as routes_sign
@@ -11,7 +11,6 @@ from Task_management_system.utils.permissions_utils import check_user_permission
 from Task_management_system.utils.raise_utils import json_response
 from Task_management_system.utils.auth_hash import generate_user_id
 from Task_management_system.utils.token_utils import generate_auth_user_pack, generate_registration_code
-from Task_management_system.app_config.tasks_queue import task_queue
 from Task_management_system.app_config.task_manager import task_manager
 
 
@@ -28,13 +27,12 @@ async def add_text(request):
             return response.json({"error": "Empty text provided"}, status=400)
 
         text_add = body.decode('utf-8')
+        text_id = str(uuid.uuid4())
 
-        task_id = str(uuid.uuid4())
-
-        await task_queue.enqueue_add_text_task(task_id, text_add, request.app.ctx.mongo[DATABASE_NAME])
+        await add_text_with_id(request.app.ctx.redis, text_id, text_add)
 
         return response.json({
-            "task_id": task_id,
+            "task_id": text_id,
             "message": "Text add task enqueued successfully",
             "added_text": text_add,
         })
@@ -43,7 +41,6 @@ async def add_text(request):
         return response.json({"error": str(err)}, status=401)
     except Exception as err:
         return response.json({"error": str(err)}, status=500)
-
 
 async def add_file(request):
     try:
@@ -61,8 +58,7 @@ async def add_file(request):
         file_content = file_field.body
         file_id = str(uuid.uuid4())
 
-        # Use the task queue to add a file
-        await task_queue.enqueue_add_file_task(file_id, file_content, request.app.ctx.mongo[DATABASE_NAME])
+        await add_file_with_id(request.app.ctx.redis, file_id, file_content)
 
         return response.json({
             "task_id": file_id,

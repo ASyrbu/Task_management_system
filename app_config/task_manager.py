@@ -17,11 +17,11 @@ class TaskManager:
             self.task_statuses[task_id] = {"status": "IN PROGRESS", "failure_reason": None}
 
             if task_type == "add_text":
-                from Task_management_system.mongodb.mongo_utils import add_text_with_id
-                await add_text_with_id(task["mongo_db"], task_id, task["text"])
+                from Task_management_system.redisdb.redis_utils import add_text_with_id
+                await add_text_with_id(task["redis_db"], task_id, task["text"])
             elif task_type == "add_file":
-                from Task_management_system.mongodb.mongo_utils import add_file_with_id
-                await add_file_with_id(task["mongo_db"], task_id, task["file_content"])
+                from Task_management_system.redisdb.redis_utils import add_file_with_id
+                await add_file_with_id(task["redis_db"], task_id, task["file_content"])
 
         except Exception as e:
             self.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(e)}
